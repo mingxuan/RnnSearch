@@ -1,5 +1,5 @@
 reimplation of RNN search model
 
-some codes are borrow from GroudHog.
+preprocessing data codes are borrowed from block examples.
 
-need to fix
+works well, but still needs to fix
