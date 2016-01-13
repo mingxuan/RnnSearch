@@ -98,14 +98,14 @@ class Decoder(GRU):
                                        2), ndim=4).max(axis=3)
         return merge_max * mask_below[:, :, None]
 
-    def next_state_merge(self, y, cur_state, c):
-        next_state, attended = self._step_forward_with_attention(x_t=y,
+    def next_state_merge(self, y_emb, cur_state, c):
+        next_state, attended = self._step_forward_with_attention(x_t=y_emb,
                                                                  x_m=None,
                                                                  h_tm1=cur_state,
                                                                  c=c,
                                                                  c_mask=None,
                                                                  )
-        combine = T.concatenate([y, next_state, attended], axis=1)
+        combine = T.concatenate([y_emb, next_state, attended], axis=1)
 
         merge_out = theano.dot(combine, self.W_m) + self.b_m
         merge_out = merge_out.reshape((merge_out.shape[0],
@@ -177,6 +177,7 @@ class Translate(object):
         params_value = numpy.load(filename)
         assert len(params_value.files) == len(self.tparams)
         for key, value in self.tparams.iteritems():
+            print value.get_value().sum(), params_value[key].sum()
             value.set_value(params_value[key])
 
 

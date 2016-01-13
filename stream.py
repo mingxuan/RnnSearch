@@ -172,6 +172,4 @@ if __name__ == '__main__':
         #break
     dev_stream = get_dev_stream(**configuration)
     for data in dev_stream.get_epoch_iterator():
-        print numpy.asarray(data).shape
         print numpy.asarray(data)
-        break

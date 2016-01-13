@@ -15,7 +15,7 @@ def get_config_cs2en():
     config['dec_embed'] = 620
 
     # Where to save model, this corresponds to 'prefix' in groundhog
-    config['saveto'] = 'search_model_ch2en'
+    config['saveto'] = 'search_model_ch2en_3'
 
     # Optimization related ----------------------------------------------------
 
@@ -106,7 +106,7 @@ def get_config_cs2en():
     config['save_freq'] = 1000
 
     # Show samples from model after this many updates
-    config['sampling_freq'] = 500
+    config['sampling_freq'] = 200
 
     # Show this many samples at each sampling
     config['hook_samples'] = 3

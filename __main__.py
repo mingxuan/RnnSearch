@@ -87,9 +87,9 @@ if __name__ == "__main__":
                 val_save_file.close()
                 logger.info('[{}]: {} times val has been translated!'.format(epoch, val_time))
 
-        if batch_count % config['save_freq'] == 0:
-            trans.savez(config['saveto']+'/params.npz')
 
 
+            if batch_count % config['save_freq'] == 0:
+                trans.savez(config['saveto']+'/params{}.npz'.format(batch_count))
 
 
