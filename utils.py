@@ -118,7 +118,8 @@ def adadelta(parameters,gradients,rho=0.95,eps=1e-6):
     # Prepare it as a list f
     gradient_sq_updates = zip(gradients_sq,gradients_sq_new)
     deltas_sq_updates = zip(deltas_sq,deltas_sq_new)
-    parameters_updates = [ (p,T.clip(p - d, -15, 15)) for p,d in izip(parameters,deltas) ]
+    #parameters_updates = [ (p,T.clip(p - d, -15, 15)) for p,d in izip(parameters,deltas) ]
+    parameters_updates = [ (p,(p - d)) for p,d in izip(parameters,deltas) ]
     return gradient_sq_updates + deltas_sq_updates + parameters_updates
 
 

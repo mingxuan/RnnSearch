@@ -103,13 +103,13 @@ def get_config_cs2en():
     config['reload'] = True
 
     # Save model after this many updates
-    config['save_freq'] = 1000
+    config['save_freq'] = 5000
 
     # Show samples from model after this many updates
     config['sampling_freq'] = 200
 
     # Show this many samples at each sampling
-    config['hook_samples'] = 3
+    config['hook_samples'] = 2
 
     # Validate bleu after this many updates
     #config['bleu_val_freq'] = 500
@@ -117,6 +117,6 @@ def get_config_cs2en():
 
     # Start bleu validation after this many updates
     #config['val_burn_in'] = 1000
-    config['val_burn_in'] = 4000
+    config['val_burn_in'] = 10000
 
     return config

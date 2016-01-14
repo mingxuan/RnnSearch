@@ -34,23 +34,17 @@ if __name__ == "__main__":
     src_vocab_reverse = {index: word for word, index in src_vocab.iteritems()}
     logger.info('load dict finished ! src dic size : {} trg dic size : {}.'.format(len(src_vocab), len(trg_vocab)))
 
-    val_set=sys.argv[1]
-    val_save_out = sys.argv[2]
-    config['val_set']=val_set
+    #val_set=sys.argv[1]
+    #config['val_set']=val_set
     dev_stream = get_dev_stream(**config)
     logger.info('start training!!!')
-    trans.load(config['saveto']+'/params.npz')
+    trans.load(config['saveto']+'/params4000.npz')
 
-    print params[0].get_value().sum()
-
+    val_save_file = open('trans', 'w')
     data_iter = dev_stream.get_epoch_iterator()
-    for data in data_iter:
-        trans = gen_sample(data, f_init, f_next,  k=3, vocab=trg_vocab_reverse)
-        print data
-        print trans
-    #trans = multi_process_sample(data_iter, f_init, f_next, k=3, vocab=trg_vocab_reverse, process=1)
-    #val_save_file.writelines(trans)
-    #val_save_file.close()
+    trans = multi_process_sample(data_iter, f_init, f_next, k=10, vocab=trg_vocab_reverse, process=1)
+    val_save_file.writelines(trans)
+    val_save_file.close()
 
 
 

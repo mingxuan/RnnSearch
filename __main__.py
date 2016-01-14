@@ -82,8 +82,8 @@ if __name__ == "__main__":
                 val_save_out = '{}.{}.txt'.format(config['val_set_out'], val_time)
                 val_save_file = open(val_save_out, 'w')
                 data_iter = dev_stream.get_epoch_iterator()
-                trans = multi_process_sample(data_iter, f_init, f_next, k=10, vocab=trg_vocab_reverse, process=1)
-                val_save_file.writelines(trans)
+                trans_res = multi_process_sample(data_iter, f_init, f_next, k=10, vocab=trg_vocab_reverse, process=1)
+                val_save_file.writelines(trans_res)
                 val_save_file.close()
                 logger.info('[{}]: {} times val has been translated!'.format(epoch, val_time))
 
