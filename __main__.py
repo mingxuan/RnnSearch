@@ -1,3 +1,4 @@
+import numpy
 import theano
 import theano.tensor as T
 
@@ -5,7 +6,8 @@ from utils import adadelta, step_clipping
 from stream import get_tr_stream, get_dev_stream, ensure_special_tokens
 import logging
 import configurations
-from sample import trans_sample, multi_process_sample
+from sample import trans_sample, multi_process_sample, risk_sample
+from mrt_risk import cal_sentence_blue
 import cPickle as pickle
 logger = logging.getLogger(__name__)
 
@@ -19,12 +21,13 @@ if __name__ == "__main__":
     target = T.lmatrix('target')
     source_mask = T.matrix('source_mask')
     target_mask = T.matrix('target_mask')
+    risk = T.vector('risk')
 
     trans = Translate(**config)
     trans.apply(source.T, source_mask.T, target.T, target_mask.T)
-    cost = trans.cost
+    cost = T.mean(trans.cost * config['risk_rate'] - risk)
 
-    #trans.load(config['saveto']+'/params.npz')
+    trans.load(config['saveto']+'/params4000.npz')
     params = trans.params
 
     for value in params:
@@ -39,7 +42,7 @@ if __name__ == "__main__":
     updates = adadelta(params, grade)
 
     logger.info('begin to build translation model : tr_fn')
-    tr_fn = theano.function([source, source_mask, target, target_mask],
+    tr_fn = theano.function([source, source_mask, target, target_mask, risk],
                             [cost], updates=updates)
     logger.info('end build translation model : tr_fn')
 
@@ -68,7 +71,14 @@ if __name__ == "__main__":
     for epoch in range(config['max_epoch']):
         for tr_data in tr_stream.get_epoch_iterator():
             batch_count += 1
-            tr_fn(*tr_data)
+            defaut_risk = numpy.zeros((tr_data[0].shape[0],), dtype='float32')
+            ### Risk training
+            if batch_count > config['mrt_burn_in'] and batch_count % config['mrt_freq'] == 0:
+                ress, refs = risk_sample(tr_data[0], tr_data[2], f_init, f_next, config['batch_size'],
+                                         src_vocab_reverse, trg_vocab_reverse)
+                defaut_risk = cal_sentence_blue(ress, refs, **config)
+                defaut_risk = numpy.log(numpy.asarray(defaut_risk, dtype='float32')+1e-6)
+            tr_fn(tr_data[0], tr_data[1], tr_data[2], tr_data[3], defaut_risk)
 
             # sample
             if batch_count % config['sampling_freq'] == 0:

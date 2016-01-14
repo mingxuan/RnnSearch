@@ -2,6 +2,7 @@ import numpy
 import copy
 from functools import partial
 from multiprocessing import Pool
+import sys
 
 def _index2sentence(vec, dic):
     r = [dic[index] for index in vec]
@@ -125,4 +126,19 @@ def multi_process_sample(x_iter, f_init, f_next,  k=10, maxlen=40, vocab=None, n
 
     trans_res = ['{}\n'.format(item) for item in trans_res]
     return trans_res
+
+def risk_sample(s, t, f_init, f_next,  hook_samples, src_vocab_reverse, trg_vocab_reverse):
+    hook_samples = min(hook_samples,s.shape[0])
+    eos_id_src = len(src_vocab_reverse) - 1
+    eos_id_trg = len(trg_vocab_reverse) - 1
+    refs=[]
+    trans=[]
+    for index in range(hook_samples):
+        s_filter = filter(lambda x:x!=eos_id_src, s[index])+[eos_id_src]
+        tran = gen_sample(s_filter, f_init, f_next,  k=1, vocab=trg_vocab_reverse)
+        ref =  _index2sentence(filter(lambda x:x!=eos_id_trg and x!=0, t[index]), trg_vocab_reverse)
+        refs.append('%s\n'%ref)
+        trans.append('%s\n'%tran)
+
+    return trans, refs
 

@@ -15,7 +15,7 @@ def get_config_cs2en():
     config['dec_embed'] = 620
 
     # Where to save model, this corresponds to 'prefix' in groundhog
-    config['saveto'] = 'search_model_ch2en_3'
+    config['saveto'] = 'search_model_ch2en'
 
     # Optimization related ----------------------------------------------------
 
@@ -77,7 +77,6 @@ def get_config_cs2en():
     config['normalized_bleu'] = True
 
     # Bleu script that will be used (moses multi-perl in this case)
-    config['bleu_script'] = datadir + 'multi-bleu.perl'
 
     # Validation set source file
     config['val_set'] = datadir + 'tst.zh'
@@ -118,5 +117,14 @@ def get_config_cs2en():
     # Start bleu validation after this many updates
     #config['val_burn_in'] = 1000
     config['val_burn_in'] = 10000
+
+    ###################MRT########
+    ####    MRT   ################
+    config['mrt_freq'] = 10
+    config['mrt_burn_in'] = 0
+    #config['bleu_script'] = datadir + 'multi-bleu.perl'
+    config['work_dir'] = 'work_dir/'
+    config['risk_rate'] = 0.005
+
 
     return config

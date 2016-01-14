@@ -51,7 +51,7 @@ class Decoder(GRU):
         self.params.extend(self.attention_layer.params)
 
     def init_state(self, context):
-        return T.tanh(theano.dot(context[1], self.W_c_init))
+        return T.tanh(theano.dot(context[-1], self.W_c_init))
 
     def _forward(self, state_below, mask_below, context, c_mask):
 
@@ -142,7 +142,7 @@ class Translate(object):
         hiddens = self.decoder.apply(tbelow[:-1], target_mask[:-1], s_rep, source_mask)
 
         cost_matrix = self.logistic.cost(hiddens, target[1:], target_mask[1:])
-        self.cost = cost_matrix.sum()/target_mask.shape[1]
+        self.cost = cost_matrix.sum(0)
 
     def _next_prob_state(self, y, state, c):
         next_state, merge_out = self.decoder.next_state_merge(y, state, c)
@@ -177,7 +177,6 @@ class Translate(object):
         params_value = numpy.load(filename)
         assert len(params_value.files) == len(self.tparams)
         for key, value in self.tparams.iteritems():
-            print value.get_value().sum(), params_value[key].sum()
             value.set_value(params_value[key])
 
 
