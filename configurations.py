@@ -14,8 +14,10 @@ def get_config_cs2en():
     config['enc_embed'] = 620
     config['dec_embed'] = 620
 
+    config['n_out'] = 500
+
     # Where to save model, this corresponds to 'prefix' in groundhog
-    config['saveto'] = 'search_model_ch2en_3'
+    config['saveto'] = 'search_model_ch2en'
 
     # Optimization related ----------------------------------------------------
 
@@ -43,7 +45,7 @@ def get_config_cs2en():
     config['weight_noise_rec'] = False
 
     # Dropout ratio, applied only after readout maxout
-    config['dropout'] = 1.0
+    config['dropout'] = 0.5
 
     # Vocabulary/dataset related ----------------------------------------------
 

@@ -51,7 +51,7 @@ class Decoder(GRU):
         self.params.extend(self.attention_layer.params)
 
     def init_state(self, context):
-        return T.tanh(theano.dot(context[1], self.W_c_init))
+        return T.tanh(theano.dot(context[-1], self.W_c_init))
 
     def _forward(self, state_below, mask_below, context, c_mask):
 
@@ -129,7 +129,7 @@ class Translate(object):
         self.trg_lookup_table = Lookup_table(dec_embed, trg_vocab_size, prefix='trg_lookup_table')
         self.encoder = BiGRU(enc_embed, enc_nhids, **kwargs)
         self.decoder = Decoder(dec_embed, dec_nhids, c_hids=enc_nhids*2, **kwargs)
-        self.logistic = LogisticRegression(dec_nhids, trg_vocab_size)
+        self.logistic = LogisticRegression(kwargs.get('n_out', dec_nhids), trg_vocab_size, prefix='logistic', drop_rate=kwargs['dropout'])
         self.params = self.src_lookup_table.params + self.trg_lookup_table.params + self.encoder.params + self.decoder.params  \
             + self.logistic.params
         self.tparams = OrderedDict([(param.name, param) for param in self.params])
@@ -177,7 +177,6 @@ class Translate(object):
         params_value = numpy.load(filename)
         assert len(params_value.files) == len(self.tparams)
         for key, value in self.tparams.iteritems():
-            print value.get_value().sum(), params_value[key].sum()
             value.set_value(params_value[key])
 
 

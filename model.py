@@ -7,29 +7,52 @@ from utils import param_init, repeat_x
 def _p(pp, name):
     return '%s_%s' % (pp, name)
 
+def _dropout_from_layer(layer, p):
+    """p is the probablity of dropping a unit
+    """
+    rng = numpy.random.RandomState(1234)
+    srng = theano.tensor.shared_randomstreams.RandomStreams(
+            rng.randint(1234))
+    # p=1-p because 1's indicate keep and p is prob of dropping
+    mask = srng.binomial(n=1, p=1-p, size=layer.shape)
+    # The cast is important because
+    # int * float32 = float64 which pulls things off the gpu
+    output = layer * T.cast(mask, theano.config.floatX)
+    return output
 
 class LogisticRegression(object):
 
-    def __init__(self, n_in, n_out, prefix='logist'):
+    def __init__(self, n_in, n_out, prefix='logist', drop_rate=0.):
 
         self.n_in = n_in
         self.n_out = n_out
         self.W = param_init().param((n_in, n_out), name=_p(prefix, 'W'))
         self.b = param_init().param((n_out, ), name=_p(prefix, 'b'))
         self.params = [self.W, self.b]
+        self.drop_rate = drop_rate
 
     def apply(self, input):
+
+        energy = theano.dot(input, self.W*(1-self.drop_rate)) + self.b
+        if energy.ndim == 3:
+            energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
+        p_y_given_x = T.nnet.softmax(energy)
+
+        return p_y_given_x
+
+    def apply_drop(self, input):
+
         energy = theano.dot(input, self.W) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
-        pmf = T.nnet.softmax(energy)
-
-        self.p_y_given_x = pmf
-
-        return self.p_y_given_x
+        p_y_given_x = T.nnet.softmax(energy)
+        return p_y_given_x
 
     def cost(self, input, targets, mask=None):
-        prediction = self.apply(input)
+
+        if self.drop_rate > 0.:
+            input = _dropout_from_layer(input, self.drop_rate)
+        prediction = self.apply_drop(input)
 
         targets_flat = targets.flatten()
 
@@ -59,6 +82,8 @@ class GRU(object):
             self.c_hids = kwargs.pop('c_hids', n_hids)
         self.prefix = prefix
         self.merge = merge
+        if self.merge:
+            self.n_out = kwargs.pop('n_out', n_hids)
         self.max_out = max_out
 
         self._init_params()
@@ -102,7 +127,7 @@ class GRU(object):
             msize = self.n_in + self.n_hids
 
         if self.merge:
-            osize = self.n_hids
+            osize = self.n_out
             if self.max_out:
                 self.W_m = param_init().param((msize, osize*2), name=_p(self.prefix, 'W_m'))
                 self.b_m = param_init().param((osize*2,), name=_p(self.prefix, 'b_m'))
