@@ -14,7 +14,7 @@ def get_config_cs2en():
     config['enc_embed'] = 620
     config['dec_embed'] = 620
 
-    config['n_out'] = 500
+    config['n_out'] = 1000
 
     # Where to save model, this corresponds to 'prefix' in groundhog
     config['saveto'] = 'search_model_ch2en'
@@ -45,7 +45,7 @@ def get_config_cs2en():
     config['weight_noise_rec'] = False
 
     # Dropout ratio, applied only after readout maxout
-    config['dropout'] = 0.5
+    config['dropout'] = 0.0
 
     # Vocabulary/dataset related ----------------------------------------------
 
@@ -119,6 +119,6 @@ def get_config_cs2en():
 
     # Start bleu validation after this many updates
     #config['val_burn_in'] = 1000
-    config['val_burn_in'] = 10000
+    config['val_burn_in'] = 5000
 
     return config
