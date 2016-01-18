@@ -69,16 +69,17 @@ class param_init(object):
         return param
 
     def orth(self, size, **kwargs):
-        scale = kwargs.pop('scale', 1.)
+        scale = kwargs.pop('scale', 0.01)
         rng = kwargs.pop('rng', numpy.random.RandomState(1234))
         if len(size) != 2:
             raise ValueError
         if size[0] == size[1]:
-            M = rng.randn(*size).astype(theano.config.floatX)
-            Q, R = numpy.linalg.qr(M)
-            Q = Q * numpy.sign(numpy.diag(R))
-            param = Q*scale
-            return param
+            values = self.normal(size, kwargs)
+            # Q, R = numpy.linalg.qr(M)
+            # Q = Q * numpy.sign(numpy.diag(R))
+            # param = Q*scale
+            u,s,v = numpy.linalg.svd(values)
+            return u * scale
         else:
             M1 = rng.randn(size[0], size[0]).astype(theano.config.floatX)
             M2 = rng.randn(size[1], size[1]).astype(theano.config.floatX)
