@@ -14,7 +14,7 @@ def get_config_cs2en():
     config['enc_embed'] = 620
     config['dec_embed'] = 620
 
-    config['n_out'] = 1000
+    config['n_out'] = 500
 
     # Where to save model, this corresponds to 'prefix' in groundhog
     config['saveto'] = 'search_model_ch2en'
