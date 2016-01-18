@@ -34,7 +34,7 @@ class param_init(object):
             elif size[0]==size[1]:
                 func = getattr(self, 'orth')
             else:
-                func = getattr(self, 'uniform')
+                func = getattr(self, 'normal')
         except AttributeError:
             logger.error('AttributeError, {}'.format(init_type))
         else:
