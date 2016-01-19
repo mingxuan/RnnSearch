@@ -1,11 +1,12 @@
 import theano
 import theano.tensor as T
+import os
 
 from utils import adadelta, step_clipping
 from stream import get_tr_stream, get_dev_stream, ensure_special_tokens
 import logging
 import configurations
-from sample import trans_sample, multi_process_sample
+from sample import trans_sample, multi_process_sample, valid_bleu
 import cPickle as pickle
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,7 @@ if __name__ == "__main__":
     batch_count = 0
 
     val_time = 0
+    best_score = 0.
     for epoch in range(config['max_epoch']):
         for tr_data in tr_stream.get_epoch_iterator():
             batch_count += 1
@@ -79,7 +81,7 @@ if __name__ == "__main__":
             if batch_count > config['val_burn_in'] and batch_count % config['bleu_val_freq'] == 0:
                 logger.info('[{}]: {} has been tackled and start translate val set!'.format(epoch, batch_count))
                 val_time += 1
-                val_save_out = '{}.{}.txt'.format(config['val_set_out'], val_time)
+                val_save_out = '{}.{}'.format(config['val_set_out'], val_time)
                 val_save_file = open(val_save_out, 'w')
                 data_iter = dev_stream.get_epoch_iterator()
                 trans_res = multi_process_sample(data_iter, f_init, f_next, k=12, vocab=trg_vocab_reverse, process=1)
@@ -87,9 +89,12 @@ if __name__ == "__main__":
                 val_save_file.close()
                 logger.info('[{}]: {} times val has been translated!'.format(epoch, val_time))
 
-
-
-            if batch_count % config['save_freq'] == 0:
-                trans.savez(config['saveto']+'/params{}.npz'.format(batch_count))
+                bleu_score = valid_bleu(config['eval_dir', val_save_out])
+                os.rename(val_save_out, "{}.{}.txt".format(val_save_out, bleu_score))
+                if bleu_score > best_score:
+                    trans.savez(config['saveto']+'/params.npz')
+                    best_score = bleu_score
+                    logger.info('epoch:{}, batchs:{}, bleu_score:{}'.format(
+                        epoch, batch_count, best_score))
 
 
