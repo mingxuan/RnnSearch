@@ -120,5 +120,6 @@ def get_config_cs2en():
     # Start bleu validation after this many updates
     #config['val_burn_in'] = 1000
     config['val_burn_in'] = 5000
+    config['eval_dir'] = 'eval'
 
     return config

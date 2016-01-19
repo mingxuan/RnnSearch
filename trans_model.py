@@ -51,7 +51,7 @@ class Decoder(GRU):
         self.params.extend(self.attention_layer.params)
 
     def init_state(self, context):
-        return T.tanh(theano.dot(context[-1], self.W_c_init))
+        return T.tanh(theano.dot(context[0], self.W_c_init))
 
     def _forward(self, state_below, mask_below, context, c_mask):
 

@@ -2,6 +2,9 @@ import numpy
 import copy
 from functools import partial
 from multiprocessing import Pool
+import os
+import subprocess
+import re
 
 def _index2sentence(vec, dic):
     r = [dic[index] for index in vec]
@@ -91,7 +94,7 @@ def gen_sample(x, f_init, f_next,  k=10, maxlen=40, vocab=None, normalize=True):
     if normalize:
         lengths = numpy.array([len(s) for s in sample])
         sample_score = sample_score/lengths
-        sidx = numpy.argmin(sample_score)
+    sidx = numpy.argmin(sample_score)
 
     best_trans = sample[sidx]
     best_trans = filter(lambda item:item!=eos_id, best_trans)
@@ -125,4 +128,20 @@ def multi_process_sample(x_iter, f_init, f_next,  k=10, maxlen=40, vocab=None, n
 
     trans_res = ['{}\n'.format(item) for item in trans_res]
     return trans_res
+
+def valid_bleu(eval_dir, valid_out):
+    child = subprocess.Popen('sh run.sh ../{}'.format(valid_out),
+                             cwd=eval_dir,
+                             shell=True, stdout=subprocess.PIPE)
+    bleu_out = child.communicate()
+    child.wait()
+    bleu_pattern = re.search(r'BLEU score = (0\.\d+)', bleu_out[0])
+    bleu_score = float(bleu_pattern.group(1))
+    return bleu_score
+
+if __name__=="__main__":
+    import sys
+    res = valid_bleu(sys.argv[1], sys.argv[2])
+    print res
+
 
