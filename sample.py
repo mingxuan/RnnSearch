@@ -91,7 +91,7 @@ def gen_sample(x, f_init, f_next,  k=10, maxlen=40, vocab=None, normalize=True):
     if normalize:
         lengths = numpy.array([len(s) for s in sample])
         sample_score = sample_score/lengths
-        sidx = numpy.argmin(sample_score)
+    sidx = numpy.argmin(sample_score)
 
     best_trans = sample[sidx]
     best_trans = filter(lambda item:item!=eos_id, best_trans)

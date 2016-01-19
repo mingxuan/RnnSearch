@@ -38,11 +38,11 @@ if __name__ == "__main__":
     #config['val_set']=val_set
     dev_stream = get_dev_stream(**config)
     logger.info('start training!!!')
-    trans.load(config['saveto']+'/params4000.npz')
+    trans.load(config['saveto']+'/params25000.npz')
 
     val_save_file = open('trans', 'w')
     data_iter = dev_stream.get_epoch_iterator()
-    trans = multi_process_sample(data_iter, f_init, f_next, k=10, vocab=trg_vocab_reverse, process=1)
+    trans = multi_process_sample(data_iter, f_init, f_next, k=10, vocab=trg_vocab_reverse, process=1, normalize=False)
     val_save_file.writelines(trans)
     val_save_file.close()
 
