@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 from trans_model import Translate
 # Get the arguments
-import sys
 if __name__ == "__main__":
     config = getattr(configurations, 'get_config_cs2en')()
 

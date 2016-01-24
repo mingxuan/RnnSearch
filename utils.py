@@ -34,7 +34,7 @@ class param_init(object):
             elif size[0]==size[1]:
                 func = getattr(self, 'orth')
             else:
-                func = getattr(self, 'uniform')
+                func = getattr(self, 'normal')
         except AttributeError:
             logger.error('AttributeError, {}'.format(init_type))
         else:
@@ -69,7 +69,7 @@ class param_init(object):
         return param
 
     def orth(self, size, **kwargs):
-        scale = kwargs.pop('scale', 0.1)
+        scale = kwargs.pop('scale', 1.0)
         rng = kwargs.pop('rng', numpy.random.RandomState(1234))
         if len(size) != 2:
             raise ValueError
@@ -118,16 +118,21 @@ def adadelta(parameters,gradients,rho=0.95,eps=1e-6):
     # Prepare it as a list f
     gradient_sq_updates = zip(gradients_sq,gradients_sq_new)
     deltas_sq_updates = zip(deltas_sq,deltas_sq_new)
-    parameters_updates = [ (p,T.clip(p - d, -15, 15)) for p,d in izip(parameters,deltas) ]
-    #parameters_updates = [ (p,(p - d)) for p,d in izip(parameters,deltas) ]
+    #parameters_updates = [ (p,T.clip(p - d, -15, 15)) for p,d in izip(parameters,deltas) ]
+    parameters_updates = [ (p,(p - d)) for p,d in izip(parameters,deltas) ]
     return gradient_sq_updates + deltas_sq_updates + parameters_updates
 
 
-def step_clipping(gparams, scale=1.):
+def step_clipping(params, gparams, scale=1.):
     grad_norm = T.sqrt(sum(map(lambda x: T.sqr(x).sum(), gparams)))
+    notfinite = T.or_(T.isnan(grad_norm), T.isinf(grad_norm))
     multiplier = T.switch(grad_norm < scale, 1., scale / grad_norm)
+    _g = []
+    for param, gparam in izip(params, gparams):
+        tmp_g = gparam * multiplier
+        _g.append(T.switch(notfinite, param*0.1, tmp_g))
 
-    params_clipping = [param*multiplier for param in gparams]
+    params_clipping = _g
 
     return  params_clipping
 

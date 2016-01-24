@@ -2,7 +2,8 @@ import numpy
 import copy
 from functools import partial
 from multiprocessing import Pool
-import sys
+import subprocess
+import re
 
 def _index2sentence(vec, dic):
     r = [dic[index] for index in vec]
@@ -128,7 +129,7 @@ def multi_process_sample(x_iter, f_init, f_next,  k=10, maxlen=40, vocab=None, n
     return trans_res
 
 def risk_sample(s, t, f_init, f_next,  hook_samples, src_vocab_reverse, trg_vocab_reverse):
-    hook_samples = min(hook_samples,s.shape[0])
+    hook_samples = min(hook_samples, s.shape[0])
     eos_id_src = len(src_vocab_reverse) - 1
     eos_id_trg = len(trg_vocab_reverse) - 1
     refs=[]
@@ -141,4 +142,15 @@ def risk_sample(s, t, f_init, f_next,  hook_samples, src_vocab_reverse, trg_voca
         trans.append('%s\n'%tran)
 
     return trans, refs
+
+
+def valid_bleu(eval_dir, valid_out):
+    child = subprocess.Popen('sh run.sh ../{}'.format(valid_out),
+                             cwd=eval_dir,
+                             shell=True, stdout=subprocess.PIPE)
+    bleu_out = child.communicate()
+    child.wait()
+    bleu_pattern = re.search(r'BLEU score = (0\.\d+)', bleu_out[0])
+    bleu_score = float(bleu_pattern.group(1))
+    return bleu_score
 

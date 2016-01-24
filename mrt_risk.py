@@ -7,9 +7,8 @@ def cal_sentence_blue(trans_lst, ref_lst, **kwargs):
     ref = open('%s/ref'%work_dir, 'w')
     trans.writelines(trans_lst)
     ref.writelines(ref_lst)
-    os.chdir(work_dir)
-    subprocess.Popen(['sh', 'run.sh'])
-    os.chdir('..')
+    child = subprocess.Popen(['sh', 'run.sh'], cwd=work_dir, shell=True)
+    child.wait()
 
     risk_file = open('%s/BLEU-seg.scr'%work_dir, 'r')
     risks = [float(item.strip().split()[-1]) for item in risk_file]

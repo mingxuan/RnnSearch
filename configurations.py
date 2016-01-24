@@ -13,6 +13,7 @@ def get_config_cs2en():
     # Dimension of the word embedding matrix in encoder/decoder
     config['enc_embed'] = 620
     config['dec_embed'] = 620
+    config['n_out'] = 1000
 
     # Where to save model, this corresponds to 'prefix' in groundhog
     config['saveto'] = 'search_model_ch2en'
@@ -43,7 +44,7 @@ def get_config_cs2en():
     config['weight_noise_rec'] = False
 
     # Dropout ratio, applied only after readout maxout
-    config['dropout'] = 1.0
+    config['dropout'] = 0.5
 
     # Vocabulary/dataset related ----------------------------------------------
 
@@ -112,19 +113,23 @@ def get_config_cs2en():
 
     # Validate bleu after this many updates
     #config['bleu_val_freq'] = 500
+    #config['bleu_val_freq'] = 1000
     config['bleu_val_freq'] = 1000
 
     # Start bleu validation after this many updates
     #config['val_burn_in'] = 1000
-    config['val_burn_in'] = 10000
+    #config['val_burn_in'] = 5000
+    config['val_burn_in'] = 5000
 
     ###################MRT########
     ####    MRT   ################
-    config['mrt_freq'] = 10
+    config['mrt_freq'] = 1
     config['mrt_burn_in'] = 0
     #config['bleu_script'] = datadir + 'multi-bleu.perl'
     config['work_dir'] = 'work_dir/'
     config['risk_rate'] = 0.005
+
+    config['eval_dir'] = 'eval'
 
 
     return config

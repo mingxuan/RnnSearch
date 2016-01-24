@@ -2,11 +2,12 @@ import numpy
 import theano
 import theano.tensor as T
 
+import os
 from utils import adadelta, step_clipping
 from stream import get_tr_stream, get_dev_stream, ensure_special_tokens
 import logging
 import configurations
-from sample import trans_sample, multi_process_sample, risk_sample
+from sample import trans_sample, multi_process_sample, risk_sample, valid_bleu
 from mrt_risk import cal_sentence_blue
 import cPickle as pickle
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     trans.apply(source.T, source_mask.T, target.T, target_mask.T)
     cost = T.mean(trans.cost * config['risk_rate'] - risk)
 
-    trans.load(config['saveto']+'/params4000.npz')
+    trans.load(config['saveto']+'/params.npz')
     params = trans.params
 
     for value in params:
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     # add step clipping
     if config['step_clipping'] > 0.:
-        grad = step_clipping(grade, config['step_clipping'])
+        grad = step_clipping(params, grade, config['step_clipping'])
 
     updates = adadelta(params, grade)
 
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     logger.info('start training!!!')
     batch_count = 0
 
+    best_score = 0.
     val_time = 0
     for epoch in range(config['max_epoch']):
         for tr_data in tr_stream.get_epoch_iterator():
@@ -76,8 +78,12 @@ if __name__ == "__main__":
             if batch_count > config['mrt_burn_in'] and batch_count % config['mrt_freq'] == 0:
                 ress, refs = risk_sample(tr_data[0], tr_data[2], f_init, f_next, config['batch_size'],
                                          src_vocab_reverse, trg_vocab_reverse)
-                defaut_risk = cal_sentence_blue(ress, refs, **config)
-                defaut_risk = numpy.log(numpy.asarray(defaut_risk, dtype='float32')+1e-6)
+                new_risk = cal_sentence_blue(ress, refs, **config)
+                new_risk = numpy.log(numpy.asarray(defaut_risk, dtype='float32')+1e-6)
+                if new_risk.shape == defaut_risk.shape:
+                    defaut_risk = new_risk
+                else:
+                    logger.warning('risk shape not match, defaut {}, trans {}'.format(defaut_risk.shape[0], new_risk.shape[0]))
             tr_fn(tr_data[0], tr_data[1], tr_data[2], tr_data[3], defaut_risk)
 
             # sample
@@ -97,9 +103,13 @@ if __name__ == "__main__":
                 val_save_file.close()
                 logger.info('[{}]: {} times val has been translated!'.format(epoch, val_time))
 
+                bleu_score = valid_bleu(config['eval_dir'], val_save_out)
+                os.rename(val_save_out, "{}.{}.txt".format(val_save_out, bleu_score))
+                if bleu_score > best_score:
+                    trans.savez(config['saveto']+'/params.npz')
+                    best_score = bleu_score
+                    logger.info('epoch:{}, batchs:{}, bleu_score:{}'.format(
+                        epoch, batch_count, best_score))
 
-
-            if batch_count % config['save_freq'] == 0:
-                trans.savez(config['saveto']+'/params{}.npz'.format(batch_count))
 
 
