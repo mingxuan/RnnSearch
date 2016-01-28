@@ -22,8 +22,10 @@ class Attention(object):
         self.Ws = param_init().param((self.s_in, self.align_size), name=_p(prefix, 'Ws'))
         self.Wa = param_init().param((self.t_in, self.align_size), name=_p(prefix, 'Wa'))
         self.b = param_init().param((self.align_size,), name=_p(prefix, 'b'))
-        self.v = param_init().param((self.align_size,), name=_p(prefix, 'v'))
+        #self.v = param_init().param((self.align_size,), init_type='constant',
+                                    #name=_p(prefix, 'v'), scale=0.001)
 
+        self.v = param_init().param((self.align_size,), name=_p(prefix, 'v'))
         self.params += [self.Ws, self.Wa, self.b, self.v]
 
     def apply(self, source, source_mask, attention):
@@ -32,7 +34,8 @@ class Attention(object):
 
         align_matrix = T.tanh(theano.dot(source, self.Ws) + T.dot(attention, self.Wa)[None, :, :] +self.b)
         align = theano.dot(align_matrix, self.v)
-        align = T.exp(align - align.max(axis=0, keepdims=True))
+        align = T.exp(align - align.max(axis=0, keepdims=True)) + 1e-5
+        align = align
         if source_mask:
             align = align * source_mask
         align = align/align.sum(axis=0, keepdims=True)

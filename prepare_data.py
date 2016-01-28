@@ -45,9 +45,9 @@ parser.add_argument("--source-dev", type=str, default="newstest2013.cs",
                     help="Source language dev filename")
 parser.add_argument("--target-dev", type=str, default="newstest2013.en",
                     help="Target language dev filename")
-parser.add_argument("--source-vocab", type=int, default=30000,
+parser.add_argument("--source-vocab", type=int, default=16000,
                     help="Source language vocabulary size")
-parser.add_argument("--target-vocab", type=int, default=30000,
+parser.add_argument("--target-vocab", type=int, default=16000,
                     help="Target language vocabulary size")
 
 

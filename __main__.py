@@ -89,7 +89,7 @@ if __name__ == "__main__":
                 val_save_file.close()
                 logger.info('[{}]: {} times val has been translated!'.format(epoch, val_time))
 
-                bleu_score = valid_bleu(config['eval_dir', val_save_out])
+                bleu_score = valid_bleu(config['eval_dir'], val_save_out)
                 os.rename(val_save_out, "{}.{}.txt".format(val_save_out, bleu_score))
                 if bleu_score > best_score:
                     trans.savez(config['saveto']+'/params.npz')
