@@ -64,8 +64,8 @@ def get_config_cs2en():
     config['trg_data'] = datadir + 'train.en.shuf'
 
     # Source and target vocabulary sizes, should include bos, eos, unk tokens
-    config['src_vocab_size'] = 16000
-    config['trg_vocab_size'] = 16000
+    config['src_vocab_size'] = 30000
+    config['trg_vocab_size'] = 30000
 
     # Special tokens and indexes
     config['unk_id'] = 1

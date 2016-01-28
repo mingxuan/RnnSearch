@@ -26,14 +26,16 @@ class LogisticRegression(object):
 
         self.n_in = n_in
         self.n_out = n_out
-        self.W = param_init().param((n_in, n_out), name=_p(prefix, 'W'))
+        self.W0 = param_init().param((n_in, 620), name=_p(prefix, 'W0'))
+        self.W1 = param_init().param((620, n_out), name=_p(prefix, 'W1'))
         self.b = param_init().param((n_out, ), name=_p(prefix, 'b'))
-        self.params = [self.W, self.b]
+        self.params = [self.W0, self.W1, self.b]
         self.drop_rate = drop_rate
 
     def apply(self, input):
 
-        energy = theano.dot(input, self.W*(1-self.drop_rate)) + self.b
+        energy = theano.dot(input, self.W0*(1-self.drop_rate))
+        energy = theano.dot(energy, self.W1) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
         p_y_given_x = T.nnet.softmax(energy)
@@ -42,7 +44,8 @@ class LogisticRegression(object):
 
     def apply_drop(self, input):
 
-        energy = theano.dot(input, self.W) + self.b
+        energy = theano.dot(input, self.W0*(1-self.drop_rate))
+        energy = theano.dot(energy, self.W1) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
         p_y_given_x = T.nnet.softmax(energy)
@@ -100,9 +103,9 @@ class GRU(object):
         self.W_xr = param_init().param(size_xh, name=f('W_xr'))
         self.W_xh = param_init().param(size_xh, name=f('W_xh'))
 
-        self.W_hz = param_init().param(size_hh, name=f('W_hz'))
-        self.W_hr = param_init().param(size_hh, name=f('W_hr'))
-        self.W_hh = param_init().param(size_hh, name=f('W_hh'))
+        self.W_hz = param_init().param(size_hh, 'orth', name=f('W_hz'))
+        self.W_hr = param_init().param(size_hh, 'orth', name=f('W_hr'))
+        self.W_hh = param_init().param(size_hh, 'orth', name=f('W_hh'))
 
         self.b_z = param_init().param((n_hids,), name=f('b_z'))
         self.b_r = param_init().param((n_hids,), name=f('b_r'))

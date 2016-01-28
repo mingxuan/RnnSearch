@@ -9,6 +9,7 @@ import configurations
 from sample import trans_sample, multi_process_sample, valid_bleu
 import cPickle as pickle
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 from trans_model import Translate
 # Get the arguments

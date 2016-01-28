@@ -31,8 +31,6 @@ class param_init(object):
                 func = getattr(self, init_type)
             elif len(size)==1:
                 func = getattr(self, 'constant')
-            elif size[0]==size[1]:
-                func = getattr(self, 'orth')
             else:
                 func = getattr(self, 'normal')
         except AttributeError:
