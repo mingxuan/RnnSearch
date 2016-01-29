@@ -4,7 +4,7 @@ def get_config_cs2en():
     # Model related -----------------------------------------------------------
 
     # Sequences longer than this will be discarded
-    config['seq_len'] = 40
+    config['seq_len'] = 50
 
     # Number of hidden units in encoder/decoder GRU
     config['enc_nhids'] = 1000

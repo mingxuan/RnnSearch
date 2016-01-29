@@ -38,9 +38,12 @@ class Attention(object):
         align = align
         if source_mask:
             align = align * source_mask
-        align = align/align.sum(axis=0, keepdims=True)
+            normalization = align.sum(axis=0) + T.all(1 - source_mask, axis=0)
+        else:
+            normalization = align.sum(axis=0)
+        align = align/normalization
+        self.output = (T.shape_padright(align) * source).sum(axis=0)
 
-        self.output = (source * align[:, :, None]).sum(axis=0)
         return self.output
 
 class Decoder(GRU):
@@ -54,7 +57,7 @@ class Decoder(GRU):
         self.params.extend(self.attention_layer.params)
 
     def init_state(self, context):
-        return T.tanh(theano.dot(context[0], self.W_c_init))
+        return T.tanh(theano.dot(context[0, :, -self.c_hids/2:], self.W_c_init) + self.b_init)
 
     def _forward(self, state_below, mask_below, context, c_mask):
 

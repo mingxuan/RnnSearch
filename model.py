@@ -29,7 +29,7 @@ class LogisticRegression(object):
         self.W0 = param_init().param((n_in, 620), name=_p(prefix, 'W0'))
         self.W1 = param_init().param((620, n_out), name=_p(prefix, 'W1'))
         self.b = param_init().param((n_out, ), name=_p(prefix, 'b'))
-        self.params = [self.W0, self.W1, self.b]
+        self.params = [self.W0, self.b]
         self.drop_rate = drop_rate
 
     def apply(self, input):
@@ -117,10 +117,12 @@ class GRU(object):
 
         if self.with_contex:
             size_ch = (self.c_hids, self.n_hids)
+            size_ch_ini = (self.c_hids/2, self.n_hids)
             self.W_cz = param_init().param(size_ch, name=f('W_cz'))
             self.W_cr = param_init().param(size_ch, name=f('W_cr'))
             self.W_ch = param_init().param(size_ch, name=f('W_ch'))
-            self.W_c_init = param_init().param(size_ch, name=f('W_c_init'))
+            self.W_c_init = param_init().param(size_ch_ini, name=f('W_c_init'))
+            self.b_init = param_init().param((self.n_hids,), name=f('b_init'))
 
             self.params = self.params + [self.W_cz, self.W_cr,
                                          self.W_ch, self.W_c_init]
@@ -209,7 +211,7 @@ class GRU(object):
 
         if self.with_contex:
             if init_state is None:
-                init_state = T.tanh(theano.dot(context, self.W_c_init))
+                init_state = T.tanh(theano.dot(context, self.W_c_init) + self.b_init)
             c_z = theano.dot(context, self.W_cz)
             c_r = theano.dot(context, self.W_cr)
             c_h = theano.dot(context, self.W_ch)
