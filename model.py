@@ -26,16 +26,14 @@ class LogisticRegression(object):
 
         self.n_in = n_in
         self.n_out = n_out
-        self.W0 = param_init().param((n_in, 620), name=_p(prefix, 'W0'))
-        self.W1 = param_init().param((620, n_out), name=_p(prefix, 'W1'))
+        self.W0 = param_init().param((n_in, n_out), name=_p(prefix, 'W0'))
         self.b = param_init().param((n_out, ), name=_p(prefix, 'b'))
         self.params = [self.W0, self.b]
         self.drop_rate = drop_rate
 
     def apply(self, input):
 
-        energy = theano.dot(input, self.W0*(1-self.drop_rate))
-        energy = theano.dot(energy, self.W1) + self.b
+        energy = theano.dot(input, self.W0*(1-self.drop_rate)) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
         p_y_given_x = T.nnet.softmax(energy)
@@ -44,8 +42,7 @@ class LogisticRegression(object):
 
     def apply_drop(self, input):
 
-        energy = theano.dot(input, self.W0*(1-self.drop_rate))
-        energy = theano.dot(energy, self.W1) + self.b
+        energy = theano.dot(input, self.W0*(1-self.drop_rate)) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
         p_y_given_x = T.nnet.softmax(energy)
@@ -117,7 +114,7 @@ class GRU(object):
 
         if self.with_contex:
             size_ch = (self.c_hids, self.n_hids)
-            size_ch_ini = (self.c_hids/2, self.n_hids)
+            size_ch_ini = (self.c_hids, self.n_hids)
             self.W_cz = param_init().param(size_ch, name=f('W_cz'))
             self.W_cr = param_init().param(size_ch, name=f('W_cr'))
             self.W_ch = param_init().param(size_ch, name=f('W_ch'))
@@ -138,8 +135,8 @@ class GRU(object):
                 self.b_m = param_init().param((osize*2,), name=_p(self.prefix, 'b_m'))
                 self.params += [self.W_m, self.b_m]
             else:
-                self.W_m = param_init().param((msize, osize*2), name=_p(self.prefix, 'W_m'))
-                self.b_m = param_init().param((osize*2,), name=_p(self.prefix, 'b_m'))
+                self.W_m = param_init().param((msize, osize), name=_p(self.prefix, 'W_m'))
+                self.b_m = param_init().param((osize,), name=_p(self.prefix, 'b_m'))
                 self.params += [self.W_m, self.b_m]
 
 
@@ -158,7 +155,7 @@ class GRU(object):
                              T.dot(h_tm1, self.W_hr) + c_r + self.b_r)
 
         can_h_t = T.tanh(T.dot(x_t, self.W_xh) +
-                         r_t * T.dot(h_tm1, self.W_hh) +
+                         T.dot(h_tm1, self.W_hh)*r_t +
                          c_h + self.b_h)
         h_t = (1 - z_t) * h_tm1 + z_t * can_h_t
 
@@ -181,7 +178,7 @@ class GRU(object):
                              T.dot(h_tm1, self.W_hr) + self.b_r)
 
         can_h_t = T.tanh(T.dot(x_t, self.W_xh) +
-                         r_t * T.dot(h_tm1, self.W_hh) +
+                         T.dot(h_tm1, self.W_hh)*r_t +
                          self.b_h)
         h_t = (1 - z_t) * h_tm1 + z_t * can_h_t
 
@@ -278,8 +275,19 @@ class Lookup_table(object):
 
         return self.W[indices.flatten()].reshape(outshape)
 
-    def index(self, i):
-        return self.W[i]
+    def apply_zero_pad(self, indices):
+        outshape = [indices.shape[i] for i
+                    in range(indices.ndim)] + [self.embsize]
+
+        emb =  self.W[indices.flatten()].reshape(outshape)
+        emb_shifted = T.zeros_like(emb)
+        emb_shifted = T.set_subtensor(emb_shifted[1:], emb[:-1])
+        return emb_shifted
+
+    def index(self, y):
+        emb = T.switch(y[:, None] < 0, T.alloc(0., 1, self.embsize),
+                       self.W[y])
+        return emb
 
 
 class BiGRU(object):

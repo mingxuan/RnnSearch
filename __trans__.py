@@ -38,7 +38,7 @@ if __name__ == "__main__":
     #config['val_set']=val_set
     dev_stream = get_dev_stream(**config)
     logger.info('start training!!!')
-    trans.load(config['saveto']+'/params25000.npz')
+    trans.load(config['saveto']+'/params.npz')
 
     val_save_file = open('trans', 'w')
     data_iter = dev_stream.get_epoch_iterator()

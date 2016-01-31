@@ -166,10 +166,13 @@ def get_dev_stream(val_set=None, src_vocab=None, src_vocab_size=30000,
 if __name__ == '__main__':
     import configurations
     configuration = getattr(configurations, 'get_config_cs2en')()
-    #trstream = get_tr_stream(**configuration)
-    #for data in trstream.get_epoch_iterator():
-        #print data[0]
-        #break
-    dev_stream = get_dev_stream(**configuration)
-    for data in dev_stream.get_epoch_iterator():
-        print numpy.asarray(data)
+    trstream = get_tr_stream(**configuration)
+    for data in trstream.get_epoch_iterator():
+        print data[0]
+        print data[1]
+        print data[2]
+        print data[3]
+        break
+    # dev_stream = get_dev_stream(**configuration)
+    # for data in dev_stream.get_epoch_iterator():
+        # print numpy.asarray(data)

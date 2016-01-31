@@ -7,14 +7,14 @@ def get_config_cs2en():
     config['seq_len'] = 50
 
     # Number of hidden units in encoder/decoder GRU
-    config['enc_nhids'] = 1000
-    config['dec_nhids'] = 1000
+    config['enc_nhids'] = 1024
+    config['dec_nhids'] = 1024
 
     # Dimension of the word embedding matrix in encoder/decoder
-    config['enc_embed'] = 620
-    config['dec_embed'] = 620
+    config['enc_embed'] = 512
+    config['dec_embed'] = 512
 
-    config['n_out'] = 500
+    config['n_out'] = 512
 
     # Where to save model, this corresponds to 'prefix' in groundhog
     config['saveto'] = 'search_model_ch2en'
@@ -25,7 +25,7 @@ def get_config_cs2en():
     config['batch_size'] = 80
 
     # This many batches will be read ahead and sorted
-    config['sort_k_batches'] = 12
+    config['sort_k_batches'] = 20
 
     # Optimization step rule
     config['step_rule'] = 'AdaDelta'

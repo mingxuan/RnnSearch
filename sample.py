@@ -17,8 +17,8 @@ def gen_sample(x, f_init, f_next,  k=10, maxlen=40, vocab=None, normalize=True):
     if x.ndim == 1:
         x = x[None, :]
     x = x.T
-    bos_id = 0
     eos_id = len(vocab) - 1
+    bos_id = 0
 
     sample = []
     sample_score = []
@@ -33,7 +33,7 @@ def gen_sample(x, f_init, f_next,  k=10, maxlen=40, vocab=None, normalize=True):
     # get initial state of decoder rnn and encoder context
     ret = f_init(x)
     next_state, ctx0 = ret[0], ret[1]
-    next_w = [bos_id]  # indicator for the first target word (bos target)
+    next_w = [-1]  # indicator for the first target word (bos target)
 
     for ii in xrange(maxlen):
         ctx = numpy.tile(ctx0, [live_k, 1])
@@ -97,7 +97,7 @@ def gen_sample(x, f_init, f_next,  k=10, maxlen=40, vocab=None, normalize=True):
     sidx = numpy.argmin(sample_score)
 
     best_trans = sample[sidx]
-    best_trans = filter(lambda item:item!=eos_id, best_trans)
+    best_trans = filter(lambda item:item!=eos_id and item!=bos_id, best_trans)
     if vocab is not None:
         best_trans = _index2sentence(best_trans, vocab)
     return best_trans
@@ -109,7 +109,7 @@ def trans_sample(s, t, f_init, f_next,  hook_samples, src_vocab_reverse, trg_voc
     eos_id_trg = len(trg_vocab_reverse) - 1
     for index in range(hook_samples):
         s_filter = filter(lambda x:x!=eos_id_src, s[index])+[eos_id_src]
-        trans = gen_sample(s_filter, f_init, f_next,  k=3, vocab=trg_vocab_reverse)
+        trans = gen_sample(s_filter, f_init, f_next,  k=2, vocab=trg_vocab_reverse)
         print "translation sample {}".format(batch_count)
         print "[src] %s" % _index2sentence(s_filter, src_vocab_reverse)
         print "[ref] %s" % _index2sentence(filter(lambda x:x!=eos_id_trg, t[index])+[eos_id_trg], trg_vocab_reverse)
@@ -117,7 +117,7 @@ def trans_sample(s, t, f_init, f_next,  hook_samples, src_vocab_reverse, trg_voc
         print
 
 
-def multi_process_sample(x_iter, f_init, f_next,  k=10, maxlen=40, vocab=None, normalize=True, process=5):
+def multi_process_sample(x_iter, f_init, f_next,  k=10, maxlen=50, vocab=None, normalize=True, process=5):
     partial_func = partial(gen_sample, f_init=f_init, f_next=f_next,
                            k=k, maxlen=maxlen, vocab=vocab, normalize=normalize)
     if process>1:
