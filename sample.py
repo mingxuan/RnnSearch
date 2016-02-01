@@ -108,11 +108,11 @@ def trans_sample(s, t, f_init, f_next,  hook_samples, src_vocab_reverse, trg_voc
     eos_id_src = len(src_vocab_reverse) - 1
     eos_id_trg = len(trg_vocab_reverse) - 1
     for index in range(hook_samples):
-        s_filter = filter(lambda x:x!=eos_id_src, s[index])+[eos_id_src]
+        s_filter = filter(lambda x:x!=0, s[index])
         trans = gen_sample(s_filter, f_init, f_next,  k=2, vocab=trg_vocab_reverse)
         print "translation sample {}".format(batch_count)
         print "[src] %s" % _index2sentence(s_filter, src_vocab_reverse)
-        print "[ref] %s" % _index2sentence(filter(lambda x:x!=eos_id_trg, t[index])+[eos_id_trg], trg_vocab_reverse)
+        print "[ref] %s" % _index2sentence(filter(lambda x:x!=0, t[index]), trg_vocab_reverse)
         print "[trans] %s" % trans
         print
 
