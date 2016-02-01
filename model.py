@@ -22,7 +22,7 @@ def _dropout_from_layer(layer, p):
 
 class LogisticRegression(object):
 
-    def __init__(self, n_in, n_out, prefix='logist', drop_rate=0.):
+    def __init__(self, n_in, n_out, prefix='logist', drop_rate=0.5):
 
         self.n_in = n_in
         self.n_out = n_out
@@ -33,7 +33,8 @@ class LogisticRegression(object):
 
     def apply(self, input):
 
-        energy = theano.dot(input, self.W0*(1-self.drop_rate)) + self.b
+        input = input * (1-self.drop_rate)
+        energy = theano.dot(input, self.W0) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
         p_y_given_x = T.nnet.softmax(energy)
@@ -41,8 +42,7 @@ class LogisticRegression(object):
         return p_y_given_x
 
     def apply_drop(self, input):
-
-        energy = theano.dot(input, self.W0*(1-self.drop_rate)) + self.b
+        energy = theano.dot(input, self.W0) + self.b
         if energy.ndim == 3:
             energy = energy.reshape([energy.shape[0]*energy.shape[1], energy.shape[2]])
         p_y_given_x = T.nnet.softmax(energy)

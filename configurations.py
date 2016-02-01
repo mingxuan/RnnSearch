@@ -38,11 +38,6 @@ def get_config_cs2en():
 
     # Regularization related --------------------------------------------------
 
-    # Weight noise flag for feed forward layers
-    config['weight_noise_ff'] = False
-
-    # Weight noise flag for recurrent layers
-    config['weight_noise_rec'] = False
 
     # Dropout ratio, applied only after readout maxout
     config['dropout'] = 0.0
@@ -60,8 +55,8 @@ def get_config_cs2en():
     config['trg_vocab'] = datadir + 'vocab.zh-en.en.pkl'
 
     # Source and target datasets
-    config['src_data'] = datadir + 'train.zh.shuf'
-    config['trg_data'] = datadir + 'train.en.shuf'
+    config['src_data'] = datadir + 'train.zh'
+    config['trg_data'] = datadir + 'train.en'
 
     # Source and target vocabulary sizes, should include bos, eos, unk tokens
     config['src_vocab_size'] = 30000

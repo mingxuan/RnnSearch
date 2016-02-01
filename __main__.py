@@ -97,5 +97,3 @@ if __name__ == "__main__":
                     best_score = bleu_score
                     logger.info('epoch:{}, batchs:{}, bleu_score:{}'.format(
                         epoch, batch_count, best_score))
-
-
